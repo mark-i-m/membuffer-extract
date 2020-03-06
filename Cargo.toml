@@ -1,0 +1,13 @@
+[package]
+name = "membuffer-extract"
+version = "0.1.0"
+authors = ["Mark Mansi <markm@cs.wisc.edu>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+flate2 = { version = "1.0.13", features = ["zlib"] }
+structopt = "0.3.11"
+fxhash = "0.2.1"
+
