@@ -10,4 +10,6 @@ edition = "2018"
 flate2 = { version = "1.0.13", features = ["zlib"] }
 structopt = "0.3.11"
 fxhash = "0.2.1"
+console = "0.9.2"
+indicatif = "0.14.0"
 

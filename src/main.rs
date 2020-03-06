@@ -2,9 +2,13 @@ use std::collections::HashMap;
 use std::io::{BufReader, Read};
 use std::path::PathBuf;
 
+use console::Term;
+
 use flate2::bufread::ZlibDecoder;
 
 use fxhash::FxBuildHasher;
+
+use indicatif::HumanBytes;
 
 use structopt::StructOpt;
 
@@ -27,6 +31,13 @@ fn main() -> std::io::Result<()> {
     let mut decoder = ZlibDecoder::new(file);
 
     let mut huge_pages: HashMap<_, _, FxBuildHasher> = HashMap::default();
+
+    let term = Term::stdout();
+
+    term.write_line(&format!(
+        "Processed (decompressed): {}",
+        HumanBytes(decoder.total_out())
+    ))?;
 
     loop {
         //println!("Consumed bytes: {}", decoder.total_out());
@@ -65,6 +76,12 @@ fn main() -> std::io::Result<()> {
         }
 
         //dump(&huge_pages);
+
+        term.clear_last_lines(1)?;
+        term.write_line(&format!(
+            "Processed (decompressed): {}",
+            HumanBytes(decoder.total_out())
+        ))?;
     }
 
     dump(&huge_pages);
