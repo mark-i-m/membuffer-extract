@@ -1,6 +1,6 @@
 use std::io::{BufRead, Read};
 
-use flate2::bufread::ZlibDecoder;
+use flate2::read::ZlibDecoder;
 
 const HEADER_U64S: usize = 3;
 const HEADER_SIZE: usize = std::mem::size_of::<u64>() * HEADER_U64S;
