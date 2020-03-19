@@ -1,16 +1,18 @@
 use std::collections::HashMap;
-use std::io::{BufReader, Read};
+use std::io::BufReader;
 use std::path::PathBuf;
 
 use console::Term;
-
-use flate2::bufread::ZlibDecoder;
 
 use fxhash::FxBuildHasher;
 
 use indicatif::HumanBytes;
 
 use structopt::StructOpt;
+
+use trace::Trace;
+
+mod trace;
 
 #[derive(Debug, StructOpt)]
 #[structopt(
@@ -27,61 +29,24 @@ fn main() -> std::io::Result<()> {
     println!("{:?}", config);
 
     let file = std::fs::File::open(config.file)?;
-    let file = BufReader::new(file);
-    let mut decoder = ZlibDecoder::new(file);
+    let trace = Trace::new(BufReader::new(file));
 
     let mut huge_pages: HashMap<_, _, FxBuildHasher> = HashMap::default();
 
     let term = Term::stdout();
-
     term.write_line(&format!(
         "Processed (decompressed): {}",
-        HumanBytes(decoder.total_out())
+        HumanBytes(trace.so_far())
     ))?;
 
-    loop {
-        //println!("Consumed bytes: {}", decoder.total_out());
-
-        let mut head = vec![0u8; 8 * 3];
-        if let Err(..) = decoder.read_exact(&mut head) {
-            break;
-        }
-
-        let (common, prefix_len, n): (u64, u64, u64) =
-            match unsafe { std::slice::from_raw_parts_mut(head.as_mut_ptr() as *mut u64, 3) } {
-                &mut [common, prefix_len, n] => (common, prefix_len, n),
-                _ => unreachable!(),
-            };
-
-        //println!("common: {:X}, prefix_len: {}, n: {}", common, prefix_len, n);
-
-        let mut data: Vec<u8> = vec![0; ((8 - prefix_len) * n) as usize];
-        decoder.read_exact(&mut data)?;
-
-        for val in data
-            .as_slice()
-            .chunks_exact((8 - prefix_len) as usize)
-            .map(|chunk| {
-                chunk
-                    .iter()
-                    .enumerate()
-                    .fold(0, |acc: u64, (i, b)| acc | (*b as u64) << (i as usize * 8))
-            })
-        {
-            let addr = val | common;
+    for (chunk, so_far) in trace {
+        for addr in chunk.into_iter() {
             let huge_addr = addr >> 9;
-
             *huge_pages.entry(huge_addr).or_insert(0) += 1;
-            //println!("{:x}", val | common);
         }
-
-        //dump(&huge_pages);
 
         term.clear_last_lines(1)?;
-        term.write_line(&format!(
-            "Processed (decompressed): {}",
-            HumanBytes(decoder.total_out())
-        ))?;
+        term.write_line(&format!("Processed (decompressed): {}", HumanBytes(so_far)))?;
     }
 
     dump(&huge_pages);

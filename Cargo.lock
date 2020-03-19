@@ -185,6 +185,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "log"
+version = "0.4.8"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "14b6052be84e6b71ab17edffc2eeabf5c2c3ae1fdb464aae35ac50c67a44e1f7"
+dependencies = [
+ "cfg-if",
+]
+
+[[package]]
 name = "membuffer-extract"
 version = "0.1.0"
 dependencies = [
@@ -192,6 +201,7 @@ dependencies = [
  "flate2",
  "fxhash",
  "indicatif",
+ "log",
  "structopt",
 ]
 
