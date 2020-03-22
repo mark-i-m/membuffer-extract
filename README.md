@@ -20,18 +20,14 @@ I've been generating traces using [Intel PIN][pin] with a customized version of
 one of the packaged PinTools (which follow the PIN licensing agreement).
 
 - Download the PIN source from Intel.
-- `membuffer.cpp` should be placed in `source/tools/MemTrace` 
+- `membuffer.cpp` and `membuffer.make` should be placed in `source/tools/MemTrace` 
 - `source/tools/MemTrace/makefile.rules` should be modified to add the following:
 
     ```make
-    $(OBJDIR)membuffer$(OBJ_SUFFIX): membuffer.cpp makefile.rules
-        $(CXX) $(TOOL_CXXFLAGS) $(COMP_OBJ)$@ $<
-
-    $(OBJDIR)membuffer$(PINTOOL_SUFFIX): $(OBJDIR)membuffer$(OBJ_SUFFIX)
-            $(LINKER) $(TOOL_LDFLAGS) $(LINK_EXE)$@ $^ $(TOOL_LPATHS) $(TOOL_LIBS) zlib/libz.a
+    -include membuffer.make
     ```
 
-    Make sure to update `zlib/libz.a` to be the path to the actual `libz.a`. In
+    Make sure to update `libz.a` to be the path to the actual `libz.a`. In
     my case, I just compiled it from source.
 
 - Run `make` to compile the `membuffer` PinTool.
