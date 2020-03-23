@@ -92,7 +92,7 @@ impl Collector {
         hist.reverse();
 
         let last = if let Some(filter) = self.filter {
-            filter
+            std::cmp::min(filter, hist.len())
         } else {
             hist.len()
         };
