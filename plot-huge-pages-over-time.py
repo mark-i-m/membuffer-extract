@@ -21,7 +21,7 @@ with open(filename, "r") as f:
             tmp.append((split[0], int(split[1]), int(split[2])))
 
             if split[0] not in per_addr:
-                per_addr[split[0]] = []
+                per_addr[split[0]] = [(0, None)]
 
 # Collect info over time per-address
 for dump in data:
