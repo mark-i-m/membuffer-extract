@@ -1,5 +1,11 @@
 #!/usr/bin/env python3
 
+from os import environ
+
+if environ["NOX"] is not None:
+    import matplotlib
+    matplotlib.use('Agg')
+
 import matplotlib.pyplot as plt
 import numpy as np
 import sys
@@ -34,8 +40,7 @@ for dump in data:
     for not_visited in set(per_addr.keys()) - visited:
         per_addr[not_visited].append((0, None))
 
-#data = np.array(data)
-#print(per_addr)
+fig = plt.figure()
 
 for (addr, data) in per_addr.items():
     counts = [d[0] for d in data]
@@ -46,4 +51,7 @@ plt.yscale('symlog')
 plt.ylabel('Derivative of #accesses to huge page')
 plt.xlabel('Total number of memory accesses (# periods)')
 
-plt.show()
+if environ["NOX"] is None:
+    plt.show()
+
+plt.savefig('/tmp/figure.png')
