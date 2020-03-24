@@ -39,6 +39,7 @@ for dump in data:
 
 for (addr, data) in per_addr.items():
     counts = [d[0] for d in data]
+    counts = np.diff(counts)
     plt.plot(counts, label=addr)
 
 plt.yscale('symlog')
