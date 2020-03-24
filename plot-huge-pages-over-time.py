@@ -43,4 +43,7 @@ for (addr, data) in per_addr.items():
     plt.plot(counts, label=addr)
 
 plt.yscale('symlog')
+plt.ylabel('Derivative of #accesses to huge page')
+plt.xlabel('Total number of memory accesses (# periods)')
+
 plt.show()
