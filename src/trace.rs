@@ -15,7 +15,7 @@ pub struct Trace<R: BufRead> {
 
     /// The common prefix for this chunk.
     common: u64,
-    /// The number of common bytes (the length of `common` in bytes.
+    /// The number of common bytes (the length of `common` in bytes).
     prefix_len: usize,
 
     /// The data we are currently processing.
