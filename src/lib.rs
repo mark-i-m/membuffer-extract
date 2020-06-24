@@ -31,6 +31,10 @@ pub struct Config {
     #[structopt(long)]
     /// Filter to the top N pages.
     pub top: Option<usize>,
+
+    #[structopt(long)]
+    /// List base pages instead of huge pages.
+    pub base: bool,
 }
 
 struct AddrInfo {
@@ -45,6 +49,7 @@ pub struct Collector {
 
     period: Option<usize>,
     filter: Option<usize>,
+    base: bool,
 }
 
 impl AddrInfo {
@@ -58,21 +63,22 @@ impl AddrInfo {
 }
 
 impl Collector {
-    pub fn new(period: Option<usize>, filter: Option<usize>) -> Self {
+    pub fn new(period: Option<usize>, filter: Option<usize>, base: bool) -> Self {
         Self {
             num_addrs: 0,
             huge_pages: HashMap::default(),
             period,
             filter,
+            base,
         }
     }
 
     pub fn collect(&mut self, addr: u64) {
-        let huge_addr = addr >> 9;
+        let addr = if self.base { addr } else { addr >> 9 };
 
         let entry = self
             .huge_pages
-            .entry(huge_addr)
+            .entry(addr)
             .or_insert(AddrInfo::new(self.num_addrs));
 
         entry.num_accesses += 1;
@@ -120,7 +126,7 @@ pub fn process(config: &Config, cap: usize) -> std::io::Result<()> {
         HumanBytes(trace.so_far())
     ))?;
 
-    let mut collector = Collector::new(config.period, config.top);
+    let mut collector = Collector::new(config.period, config.top, config.base);
 
     trace.for_each(|(chunk, so_far)| {
         chunk.into_iter().for_each(|addr| collector.collect(addr));
