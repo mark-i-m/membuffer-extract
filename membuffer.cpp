@@ -53,6 +53,12 @@ KNOB<string> KnobOutputFile(KNOB_MODE_WRITEONCE, "pintool", "o",
 KNOB<BOOL> KnobEmitTrace(KNOB_MODE_WRITEONCE, "pintool", "emit", "0",
                          "emit a trace in the output file");
 
+/*
+ * Fast forward until the file is created
+ */
+KNOB<BOOL> KnobFastForward(KNOB_MODE_WRITEONCE, "pintool", "ff", "0",
+                         "fast forward until /tmp/pin-memtrace-go is created");
+
 /* Struct for holding memory references.
  */
 struct MEMREF {
@@ -62,6 +68,22 @@ struct MEMREF {
 BUFFER_ID bufId;
 
 TLS_KEY mlog_key;
+
+BOOL go = false;
+
+static inline BOOL should_trace() {
+  if (!KnobFastForward) return true;
+  if (go) return true;
+
+  FILE *fp = fopen("/tmp/pin-memtrace-go", "r");
+  if (fp != NULL) {
+    go = true;
+    fclose(fp);
+    return true;
+  } else {
+    return false;
+  }
+}
 
 #define NUM_BUF_PAGES 1024
 
@@ -261,6 +283,10 @@ INT32 Usage() {
  * that access memory.
  */
 VOID Trace(TRACE trace, VOID *v) {
+  if (!should_trace()) {
+    return;
+  }
+
   // Insert a call to record the effective address.
   for (BBL bbl = TRACE_BblHead(trace); BBL_Valid(bbl); bbl = BBL_Next(bbl)) {
     for (INS ins = BBL_InsHead(bbl); INS_Valid(ins); ins = INS_Next(ins)) {
